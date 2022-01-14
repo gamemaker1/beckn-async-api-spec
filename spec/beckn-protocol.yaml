@@ -1,8 +1,223 @@
 # spec/beckn-protocol.yaml
 # This file contains the Async API specification for the Beckn Protocol.
 
+#
+# Overall information about the Beckn Protocol (Async API) specification.
+#
 asyncapi: '2.2.0'
 info:
   title: 'Beckn Protocol (Async API) Specification'
-  version: '0.1.0'
+  version: '0.1.0-async'
   description: 'The Beckn Core API, reimagined with an event driven approach.'
+
+#
+# Details about channels that clients can listen to (subscribe) or send messages (publish).
+#
+channels:
+  /search:
+    publish:
+      summary: 'Enables Beckn Applications to make a search request to one or more Beckn Providers.'
+      operationId: 'make_search_request'
+      message:
+        $ref: '#/components/messages/SearchPayload'
+    subscribe:
+      summary: 'Enables Beckn Providers to listen to search requests made by Beckn Applications.'
+      operationId: 'receive_search_request'
+      message:
+        $ref: '#/components/messages/SearchPayload'
+  /on_search:
+    publish:
+      summary: 'Enables Beckn Providers to respond to search requests that they receives from a Beckn Application.'
+      operationId: 'make_search_response'
+      message:
+        $ref: '#/components/messages/SearchResponse'
+    subscribe:
+      summary: 'Enables Beckn Applications to receive responses from individual Beckn Providers.'
+      operationId: 'receive_search_response'
+      message:
+        $ref: '#/components/messages/SearchResponse'
+
+#
+# The schema and message payload definitions.
+#
+components:
+  messages:
+    SearchPayload:
+      summary: 'The envelope in which a Beckn Application sends it search request.'
+      payload:
+        type: 'object'
+        properties:
+          meta:
+            description: 'The request metadata, equivalent to the headers of an HTTP request.'
+            type: 'object'
+            properties:
+              signature:
+                $ref: '#/components/schemas/Signature'
+          data:
+            description: 'The Beckn request data, equivalent to the body of an HTTP request.'
+            type: 'object'
+            properties:
+              content:
+                $ref: '#/components/schemas/Context'
+              message:
+                $ref: '#/components/schemas/SearchMessage'
+    SearchResponse:
+      summary: 'The envelope in which a Beckn Provider sends it search response.'
+      payload:
+        type: 'object'
+        properties:
+          meta:
+            description: 'The request metadata, equivalent to the headers of an HTTP response.'
+            type: 'object'
+            properties:
+              signature:
+                $ref: '#/components/schemas/Signature'
+          data:
+            description: 'The Beckn response data, equivalent to the body of an HTTP response.'
+            type: 'object'
+            properties:
+              content:
+                $ref: '#/components/schemas/Context'
+              message:
+                description: 'The data from the Beckn Provider matching the search intent of the Beckn Application.'
+                type: 'object'
+                properties:
+                  catalog:
+                    $ref: '#/components/schemas/Catalog'
+  schemas:
+    Signature:
+      description: 'The signature of a Beckn Application/Provider that helps verify the authenticity of the message.'
+      type: 'object'
+      properties:
+        hash:
+          type: 'string'
+          description: 'The hexadecimal encoded Blake 512 hash of the `data` property in the payload.'
+        # TODO: Additional fields could be added if we use public and private
+        # keys to do payload signing.
+    Domain:
+      description: 'The domain name of an entity.'
+      type: 'string'
+    Action:
+      description: 'Defines the API call being made.'
+      type: 'string'
+      enum:
+        - 'search'
+        - 'select'
+        - 'init'
+        - 'confirm'
+        - 'update'
+        - 'status'
+        - 'track'
+        - 'cancel'
+        - 'rating'
+        - 'support'
+        - 'on_search'
+        - 'on_select'
+        - 'on_init'
+        - 'on_confirm'
+        - 'on_update'
+        - 'on_status'
+        - 'on_track'
+        - 'on_cancel'
+        - 'on_rating'
+        - 'on_support'
+    Country:
+      description: 'Describes a country.'
+      type: 'object'
+      properties:
+        name:
+          description: 'The name of the country.'
+          type: 'string'
+        code:
+          description: 'The country code in ISO 3166 format.'
+          type: 'string'
+    City:
+      description: 'Describes a city.'
+      type: 'object'
+      properties:
+        name:
+          description: 'The name of the city.'
+          type: 'string'
+        code:
+          description: 'The city code.'
+          type: 'string'
+    Context:
+      description: 'Information about the request/response and entity making the request/response.'
+      type: 'object'
+      properties:
+        domain:
+          $ref: '#/components/schemas/Domain'
+        country:
+          $ref: '#/components/schemas/Country'
+        city:
+          $ref: '#/components/schemas/City'
+        action:
+          $ref: '#/components/schemas/Action'
+        core_version:
+          description: 'The version of Beckn Core API specification being used.'
+          type: 'string'
+        bap_id:
+          description: 'The unique identifier of the Beckn Application.'
+          type: 'string'
+        bap_uri:
+          description: 'The URI to make a callback to the Beckn Application when using Webhooks.'
+          type: 'string'
+          format: uri
+        bpp_id:
+          description: 'The unique identifier of the Beckn Provider.'
+          type: 'string'
+        bpp_uri:
+          description: 'The base URI of the Beckn Provider for making REST API calls.'
+          type: 'string'
+          format: uri
+
+        transaction_id:
+          description:
+            'The unique identifier for the transaction that persists throughout the process - from search up until
+            confirmation.'
+          type: 'string'
+
+        message_id:
+          description:
+            'The unique identifier for this message. It is used to ensure the response from the Beckn Provider is
+            directed to the right Beckn Application.'
+          type: 'string'
+
+        timestamp:
+          description: 'The time the message was published, in RFC3339 format'
+          type: 'string'
+          format: 'date-time'
+        key:
+          description:
+            'The public key of the Beckn Application, that can be used to verify the signature of this message.'
+          type: 'string'
+        ttl:
+          description: 'The time (in milliseconds) that the Beckn Application expects a response in.'
+          type: 'number'
+      required:
+        - 'domain'
+        - 'action'
+        - 'core_version'
+        - 'transaction_id'
+        - 'message_id'
+        - 'timestamp'
+    Catalog:
+      description: 'Provides detailed information about the items a Beckn Provider can provide.'
+      type: object
+      properties:
+        # TODO
+        todo:
+          type: boolean
+    Intent:
+      description: 'Search parameters, which if can be fulfilled, Beckn Providers respond to Beckn Applications'
+      type: object
+      properties:
+        # TODO
+        todo:
+          type: boolean
+    SearchMessage:
+      description: 'The search intent that Beckn Providers which can fulfill must respond to.'
+      type: 'object'
+      properties:
+        intent:
+          $ref: '#/components/schemas/Intent'
