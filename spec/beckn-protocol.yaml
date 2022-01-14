@@ -170,19 +170,16 @@ components:
           description: 'The base URI of the Beckn Provider for making REST API calls.'
           type: 'string'
           format: uri
-
         transaction_id:
           description:
             'The unique identifier for the transaction that persists throughout the process - from search up until
             confirmation.'
           type: 'string'
-
         message_id:
           description:
             'The unique identifier for this message. It is used to ensure the response from the Beckn Provider is
             directed to the right Beckn Application.'
           type: 'string'
-
         timestamp:
           description: 'The time the message was published, in RFC3339 format'
           type: 'string'
