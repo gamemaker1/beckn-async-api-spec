@@ -57,7 +57,7 @@ components:
             description: 'The Beckn request data, equivalent to the body of an HTTP request.'
             type: 'object'
             properties:
-              content:
+              context:
                 $ref: '#/components/schemas/Context'
               message:
                 $ref: '#/components/schemas/SearchMessage'
@@ -76,7 +76,7 @@ components:
             description: 'The Beckn response data, equivalent to the body of an HTTP response.'
             type: 'object'
             properties:
-              content:
+              context:
                 $ref: '#/components/schemas/Context'
               message:
                 description: 'The data from the Beckn Provider matching the search intent of the Beckn Application.'
@@ -90,10 +90,16 @@ components:
       type: 'object'
       properties:
         hash:
-          type: 'string'
           description: 'The hexadecimal encoded Blake 512 hash of the `data` property in the payload.'
-        # TODO: Additional fields could be added if we use public and private
-        # keys to do payload signing.
+          type: 'string'
+        digest:
+          description: 'The digital signature of the hash of the data.'
+          type: 'string'
+        algorithm:
+          description: 'The algorithm used to create the digital signature.'
+          type: 'string'
+          enum: # TODO: Add more algorithms
+            - 'ed25519'
     Domain:
       description: 'The domain name of an entity.'
       type: 'string'
