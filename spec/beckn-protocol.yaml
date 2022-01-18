@@ -16,23 +16,31 @@ info:
 channels:
   /search:
     publish:
-      summary: 'Enables Beckn Applications to make a search request to one or more Beckn Providers.'
+      summary:
+        'Enables Beckn Applications to make a search request to one or more
+        Beckn Providers.'
       operationId: 'make_search_request'
       message:
         $ref: '#/components/messages/SearchPayload'
     subscribe:
-      summary: 'Enables Beckn Providers to listen to search requests made by Beckn Applications.'
+      summary:
+        'Enables Beckn Providers to listen to search requests made by Beckn
+        Applications.'
       operationId: 'receive_search_request'
       message:
         $ref: '#/components/messages/SearchPayload'
   /on_search:
     publish:
-      summary: 'Enables Beckn Providers to respond to search requests that they receives from a Beckn Application.'
+      summary:
+        'Enables Beckn Providers to respond to search requests that they
+        receives from a Beckn Application.'
       operationId: 'make_search_response'
       message:
         $ref: '#/components/messages/SearchResponse'
     subscribe:
-      summary: 'Enables Beckn Applications to receive responses from individual Beckn Providers.'
+      summary:
+        'Enables Beckn Applications to receive responses from individual Beckn
+        Providers.'
       operationId: 'receive_search_response'
       message:
         $ref: '#/components/messages/SearchResponse'
@@ -43,18 +51,23 @@ channels:
 components:
   messages:
     SearchPayload:
-      summary: 'The envelope in which a Beckn Application sends it search request.'
+      summary:
+        'The envelope in which a Beckn Application sends it search request.'
       payload:
         type: 'object'
         properties:
           meta:
-            description: 'The request metadata, equivalent to the headers of an HTTP request.'
+            description:
+              'The request metadata, equivalent to the headers of an HTTP
+              request.'
             type: 'object'
             properties:
               signature:
                 $ref: '#/components/schemas/Signature'
           data:
-            description: 'The Beckn request data, equivalent to the body of an HTTP request.'
+            description:
+              'The Beckn request data, equivalent to the body of an HTTP
+              request.'
             type: 'object'
             properties:
               context:
@@ -62,35 +75,46 @@ components:
               message:
                 $ref: '#/components/schemas/SearchMessage'
     SearchResponse:
-      summary: 'The envelope in which a Beckn Provider sends it search response.'
+      summary:
+        'The envelope in which a Beckn Provider sends it search response.'
       payload:
         type: 'object'
         properties:
           meta:
-            description: 'The request metadata, equivalent to the headers of an HTTP response.'
+            description:
+              'The request metadata, equivalent to the headers of an HTTP
+              response.'
             type: 'object'
             properties:
               signature:
                 $ref: '#/components/schemas/Signature'
           data:
-            description: 'The Beckn response data, equivalent to the body of an HTTP response.'
+            description:
+              'The Beckn response data, equivalent to the body of an HTTP
+              response.'
             type: 'object'
             properties:
               context:
                 $ref: '#/components/schemas/Context'
               message:
-                description: 'The data from the Beckn Provider matching the search intent of the Beckn Application.'
+                description:
+                  'The data from the Beckn Provider matching the search intent
+                  of the Beckn Application.'
                 type: 'object'
                 properties:
                   catalog:
                     $ref: '#/components/schemas/Catalog'
   schemas:
     Signature:
-      description: 'The signature of a Beckn Application/Provider that helps verify the authenticity of the message.'
+      description:
+        'The signature of a Beckn Application/Provider that helps verify the
+        authenticity of the message.'
       type: 'object'
       properties:
         hash:
-          description: 'The hexadecimal encoded Blake 512 hash of the `data` property in the payload.'
+          description:
+            'The hexadecimal encoded Blake 512 hash of the `data` property in
+            the payload.'
           type: 'string'
         digest:
           description: 'The digital signature of the hash of the data.'
@@ -100,127 +124,831 @@ components:
           type: 'string'
           enum: # TODO: Add more algorithms
             - 'ed25519'
-    Domain:
-      description: 'The domain name of an entity.'
-      type: 'string'
-    Action:
-      description: 'Defines the API call being made.'
-      type: 'string'
-      enum:
-        - 'search'
-        - 'select'
-        - 'init'
-        - 'confirm'
-        - 'update'
-        - 'status'
-        - 'track'
-        - 'cancel'
-        - 'rating'
-        - 'support'
-        - 'on_search'
-        - 'on_select'
-        - 'on_init'
-        - 'on_confirm'
-        - 'on_update'
-        - 'on_status'
-        - 'on_track'
-        - 'on_cancel'
-        - 'on_rating'
-        - 'on_support'
-    Country:
-      description: 'Describes a country.'
+    Address:
+      description: 'Describes the physical location of an entity.'
       type: 'object'
       properties:
-        name:
-          description: 'The name of the country.'
+        door:
+          description: 'The door/shop number of the location.'
           type: 'string'
-        code:
-          description: 'The country code in ISO 3166 format.'
-          type: 'string'
-    City:
-      description: 'Describes a city.'
-      type: 'object'
-      properties:
         name:
+          description: 'The name of the location (e.g., shop name).'
+          type: 'string'
+        building:
+          description: 'The name of the building or block of the location.'
+          type: 'string'
+        street:
+          description: 'The name or number of the street.'
+          type: 'string'
+        locality:
+          description: 'The name of the locality.'
+          type: 'string'
+        ward:
+          description: 'The name or number of the ward, if applicable.'
+          type: 'string'
+        city:
           description: 'The name of the city.'
           type: 'string'
-        code:
-          description: 'The city code.'
+        state:
+          description: 'The name of the state.'
           type: 'string'
-    Context:
-      description: 'Information about the request/response and entity making the request/response.'
+        country:
+          description: 'The name of the country.'
+          type: 'string'
+        area_code:
+          description: 'The pincode/zipcode of the location.'
+          type: 'string'
+    Agent:
+      description: 'Describes the executor of an order.'
+      allOf:
+        - $ref: '#/components/schemas/Person'
+        - $ref: '#/components/schemas/Contact'
+        - type: 'object'
+          properties:
+            rateable:
+              $ref: '#/components/schemas/Rateable'
+    Authorization:
+      description: 'Describes an authorization mechanism.'
       type: 'object'
+      properties:
+        type:
+          type: 'string'
+          description: 'The type of authorization mechanism used.'
+        token:
+          type: string
+          description: Token used for authorization
+        valid_from:
+          type: string
+          format: date-time
+          description: Timestamp in RFC3339 format from which token is valid
+        valid_to:
+          type: string
+          format: date-time
+          description: Timestamp in RFC3339 format until which token is valid
+        status:
+          type: string
+          description: Status of the token
+    Catalog:
+      description: Describes a BPP catalog
+      type: object
+      properties:
+        bpp/descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        bpp/categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+        bpp/fulfillments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Fulfillment'
+        bpp/payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Payment'
+        bpp/offers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Offer'
+        bpp/providers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Provider'
+        exp:
+          type: string
+          description: Time after which catalog has to be refreshed
+          format: date-time
+    Category:
+      description: Describes a category
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique id of the category
+        parent_category_id:
+          $ref: '#/components/schemas/Category/properties/id'
+        descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        time:
+          $ref: '#/components/schemas/Time'
+        tags:
+          $ref: '#/components/schemas/Tags'
+    Circle:
+      description: Describes a circular area on the map
+      type: object
+      properties:
+        gps:
+          $ref: '#/components/schemas/Gps'
+        radius:
+          $ref: '#/components/schemas/Scalar'
+      required:
+        - gps
+        - radius
+    City:
+      description: Describes a city
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the city
+        code:
+          type: string
+          description: City code
+    Contact:
+      type: object
+      properties:
+        phone:
+          type: string
+        email:
+          type: string
+        tags:
+          $ref: '#/components/schemas/Tags'
+    Context:
+      description: Describes a beckn message context
+      type: object
       properties:
         domain:
           $ref: '#/components/schemas/Domain'
         country:
-          $ref: '#/components/schemas/Country'
+          $ref: '#/components/schemas/Country/properties/code'
+        city:
+          $ref: '#/components/schemas/City/properties/code'
+        action:
+          type: string
+          description:
+            Defines the Beckn API call. Any actions other than the enumerated
+            actions are not supported by Beckn Protocol
+          enum:
+            - search
+            - select
+            - init
+            - confirm
+            - update
+            - status
+            - track
+            - cancel
+            - rating
+            - support
+            - on_search
+            - on_select
+            - on_init
+            - on_confirm
+            - on_update
+            - on_status
+            - on_track
+            - on_cancel
+            - on_rating
+            - on_support
+        core_version:
+          type: string
+          description: Version of Beckn core API specification being used
+        bap_id:
+          type: string
+          format: uri
+          description:
+            Unique id of the BAP. By default it is the fully qualified domain
+            name of the BAP
+        bap_uri:
+          type: string
+          format: uri
+          description:
+            URI of the BAP for accepting callbacks. Must have the same domain
+            name as the bap_id
+        bpp_id:
+          type: string
+          format: uri
+          description:
+            Unique id of the BPP. By default it is the fully qualified domain
+            name of the BPP
+        bpp_uri:
+          type: string
+          format: uri
+          description:
+            URI of the BPP. Must have the same domain name as the bap_id
+        transaction_id:
+          type: string
+          description:
+            This is a unique value which persists across all API calls from
+            search through confirm
+        message_id:
+          type: string
+          description:
+            This is a unique value which persists during a request / callback
+            cycle
+        timestamp:
+          type: string
+          format: date-time
+          description: Time of request generation in RFC3339 format
+        key:
+          type: string
+          description: The encryption public key of the sender
+        ttl:
+          type: string
+          description:
+            The duration in ISO8601 format after timestamp for which this
+            message holds valid
+      required:
+        - domain
+        - action
+        - country
+        - city
+        - core_version
+        - transaction_id
+        - message_id
+        - bap_id
+        - bap_uri
+        - timestamp
+    Country:
+      description: Describes a country.
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the country
+        code:
+          type: string
+          description: Country code as per ISO 3166-1 and ISO 3166-2 format
+    DecimalValue:
+      description: Describes a decimal value
+      type: string
+      pattern: '[+-]?([0-9]*[.])?[0-9]+'
+    Descriptor:
+      description: Describes the description of a real-world object.
+      type: object
+      properties:
+        name:
+          type: string
+        code:
+          type: string
+        symbol:
+          type: string
+        short_desc:
+          type: string
+        long_desc:
+          type: string
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/Image'
+        audio:
+          type: string
+          format: uri
+        3d_render:
+          type: string
+          format: uri
+    Domain:
+      description: Describes the domain of an object
+      type: string
+    Duration:
+      description: Describes duration as per ISO8601 format
+      type: string
+    Feedback:
+      description: Feedback for a service
+      type: object
+      properties:
+        feedback_form:
+          $ref: '#/components/schemas/FeedbackForm'
+        feedback_url:
+          $ref: '#/components/schemas/FeedbackUrl'
+    FeedbackForm:
+      description:
+        Describes a feedback form that a BPP can send to get feedback from the
+        BAP
+      type: array
+      items:
+        $ref: '#/components/schemas/FeedbackFormElement'
+    FeedbackFormElement:
+      description:
+        An element in the feedback form. It can be question or an answer to the
+        question.
+      type: object
+      properties:
+        id:
+          type: string
+        parent_id:
+          $ref: '#/components/schemas/FeedbackFormElement/properties/id'
+        question:
+          description:
+            Specifies the question to which the answer options will be contained
+            in the child FeedbackFormElements
+          type: string
+        answer:
+          description:
+            Specifies an answer option to which the question will be in the
+            FeedbackFormElement specified in parent_id
+          type: string
+        answer_type:
+          description: Specifies how the answer option should be rendered.
+          type: string
+          enum:
+            - radio
+            - checkbox
+            - text
+    FeedbackUrl:
+      description: Describes how a feedback URL will be sent by the BPP
+      type: object
+      properties:
+        url:
+          description: feedback URL sent by the BPP
+          type: string
+          format: uri
+        tl_method:
+          type: string
+          enum:
+            - http/get
+            - http/post
+        params:
+          type: object
+          properties:
+            feedback_id:
+              type: string
+              description:
+                This value will be placed in the the $feedback_id url param in
+                case of http/get and in the requestBody http/post requests
+          additionalProperties:
+            type: string
+          required:
+            - feedback_id
+    Fulfillment:
+      description:
+        Describes how a single product/service will be rendered/fulfilled to the
+        end customer
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique reference ID to the fulfillment of an order
+        type:
+          type: string
+          description: This describes the type of fulfillment
+        provider_id:
+          $ref: '#/components/schemas/Provider/properties/id'
+        rating:
+          $ref: '#/components/schemas/Rating/properties/value'
+        state:
+          $ref: '#/components/schemas/State'
+        tracking:
+          type: boolean
+          description: Indicates whether the fulfillment allows tracking
+          default: false
+        customer:
+          type: object
+          properties:
+            person:
+              $ref: '#/components/schemas/Person'
+            contact:
+              $ref: '#/components/schemas/Contact'
+        agent:
+          $ref: '#/components/schemas/Agent'
+        person:
+          $ref: '#/components/schemas/Person'
+        contact:
+          $ref: '#/components/schemas/Contact'
+        vehicle:
+          $ref: '#/components/schemas/Vehicle'
+        start:
+          description: Details on the start of fulfillment
+          type: object
+          properties:
+            location:
+              $ref: '#/components/schemas/Location'
+            time:
+              $ref: '#/components/schemas/Time'
+            instructions:
+              $ref: '#/components/schemas/Descriptor'
+            contact:
+              $ref: '#/components/schemas/Contact'
+            person:
+              $ref: '#/components/schemas/Person'
+            authorization:
+              $ref: '#/components/schemas/Authorization'
+        end:
+          description: Details on the end of fulfillment
+          type: object
+          properties:
+            location:
+              $ref: '#/components/schemas/Location'
+            time:
+              $ref: '#/components/schemas/Time'
+            instructions:
+              $ref: '#/components/schemas/Descriptor'
+            contact:
+              $ref: '#/components/schemas/Contact'
+            person:
+              $ref: '#/components/schemas/Person'
+            authorization:
+              $ref: '#/components/schemas/Authorization'
+        rateable:
+          $ref: '#/components/schemas/Rateable'
+        tags:
+          $ref: '#/components/schemas/Tags'
+    Gps:
+      description: Describes a gps coordinate
+      type: string
+      pattern: '^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$'
+    Image:
+      description:
+        'Image of an object. <br/><br/> A url based image will look like
+        <br/><br/>```uri:http://path/to/image``` <br/><br/> An image can also be
+        sent as a data string. For example : <br/><br/>
+        ```data:js87y34ilhriuho84r3i4```'
+      type: string
+    Intent:
+      description: Intent of a user. Used for searching for services
+      type: object
+      properties:
+        descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        provider:
+          $ref: '#/components/schemas/Provider'
+        fulfillment:
+          $ref: '#/components/schemas/Fulfillment'
+        payment:
+          $ref: '#/components/schemas/Payment'
+        category:
+          $ref: '#/components/schemas/Category'
+        offer:
+          $ref: '#/components/schemas/Offer'
+        item:
+          $ref: '#/components/schemas/Item'
+        tags:
+          $ref: '#/components/schemas/Tags'
+    Item:
+      description: Describes an item. Allows for domain extension.
+      type: object
+      properties:
+        id:
+          description:
+            This is the most unique identifier of a service item. An example of
+            an Item ID could be the SKU of a product.
+          type: string
+          format: '#/components/schemas/Item/properties/id'
+        parent_item_id:
+          $ref: '#/components/schemas/Item/properties/id'
+        descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        price:
+          $ref: '#/components/schemas/Price'
+        category_id:
+          $ref: '#/components/schemas/Category/properties/id'
+        fulfillment_id:
+          $ref: '#/components/schemas/Fulfillment/properties/id'
+        rating:
+          $ref: '#/components/schemas/Rating/properties/value'
+        location_id:
+          $ref: '#/components/schemas/Location/properties/id'
+        time:
+          $ref: '#/components/schemas/Time'
+        rateable:
+          $ref: '#/components/schemas/Rateable'
+        matched:
+          type: boolean
+        related:
+          type: boolean
+        recommended:
+          type: boolean
+        tags:
+          $ref: '#/components/schemas/Tags'
+    Location:
+      description: Describes the location of a runtime object.
+      type: object
+      properties:
+        id:
+          type: string
+        descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        gps:
+          $ref: '#/components/schemas/Gps'
+        address:
+          $ref: '#/components/schemas/Address'
+        station_code:
+          type: string
         city:
           $ref: '#/components/schemas/City'
-        action:
-          $ref: '#/components/schemas/Action'
-        core_version:
-          description: 'The version of Beckn Core API specification being used.'
-          type: 'string'
-        bap_id:
-          description: 'The unique identifier of the Beckn Application.'
-          type: 'string'
-        bap_uri:
-          description: 'The URI to make a callback to the Beckn Application when using Webhooks.'
-          type: 'string'
+        country:
+          $ref: '#/components/schemas/Country'
+        circle:
+          $ref: '#/components/schemas/Circle'
+        polygon:
+          type: string
+        3dspace:
+          type: string
+        time:
+          $ref: '#/components/schemas/Time'
+    Name:
+      type: string
+      description:
+        'Describes the name of a person in format:
+        ./{given_name}/{honorific_prefix}/{first_name}/{middle_name}/{last_name}/{honorific_suffix}'
+      pattern: '^\./[^/]+/[^/]*/[^/]*/[^/]*/[^/]*/[^/]*$'
+    Offer:
+      description: Describes an offer
+      type: object
+      properties:
+        id:
+          type: string
+        descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        location_ids:
+          type: array
+          items:
+            $ref: '#/components/schemas/Location/properties/id'
+        category_ids:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category/properties/id'
+        item_ids:
+          type: array
+          items:
+            $ref: '#/components/schemas/Item/properties/id'
+        time:
+          $ref: '#/components/schemas/Time'
+    Payment:
+      description: Describes a payment
+      type: object
+      properties:
+        uri:
+          type: string
+          description:
+            'A payment uri to be called by the BAP. If empty, then the payment
+            is to be done offline. The details of payment should be present in
+            the params object. If ```tl_method``` = http/get, then the payment
+            details will be sent as url params. Two url param values,
+            ```$transaction_id``` and ```$amount``` are mandatory. And example
+            url would be :
+            https://www.example.com/pay?txid=$transaction_id&amount=$amount&vpa=upiid&payee=shopez&billno=1234'
           format: uri
-        bpp_id:
-          description: 'The unique identifier of the Beckn Provider.'
-          type: 'string'
-        bpp_uri:
-          description: 'The base URI of the Beckn Provider for making REST API calls.'
-          type: 'string'
-          format: uri
-        transaction_id:
+        tl_method:
+          type: string
+          enum:
+            - http/get
+            - http/post
+        params:
+          type: object
+          properties:
+            transaction_id:
+              type: string
+              description:
+                This value will be placed in the the $transaction_id url param
+                in case of http/get and in the requestBody http/post requests
+            transaction_status:
+              type: string
+            amount:
+              $ref: '#/components/schemas/Price/properties/value'
+            currency:
+              $ref: '#/components/schemas/Price/properties/currency'
+          additionalProperties:
+            type: string
+          required:
+            - currency
+        type:
+          type: string
+          enum:
+            - ON-ORDER
+            - PRE-FULFILLMENT
+            - ON-FULFILLMENT
+            - POST-FULFILLMENT
+        status:
+          type: string
+          enum:
+            - PAID
+            - NOT-PAID
+        time:
+          $ref: '#/components/schemas/Time'
+    Person:
+      description: Describes a person.
+      type: object
+      properties:
+        name:
+          $ref: '#/components/schemas/Name'
+        image:
+          $ref: '#/components/schemas/Image'
+        dob:
+          type: string
+          format: date
+        gender:
+          type: string
           description:
-            'The unique identifier for the transaction that persists throughout the process - from search up until
-            confirmation.'
-          type: 'string'
-        message_id:
-          description:
-            'The unique identifier for this message. It is used to ensure the response from the Beckn Provider is
-            directed to the right Beckn Application.'
-          type: 'string'
-        timestamp:
-          description: 'The time the message was published, in RFC3339 format'
-          type: 'string'
-          format: 'date-time'
-        key:
-          description:
-            'The public key of the Beckn Application, that can be used to verify the signature of this message.'
-          type: 'string'
-        ttl:
-          description: 'The time (in milliseconds) that the Beckn Application expects a response in.'
-          type: 'number'
+            'Gender of something, typically a Person, but possibly also
+            fictional characters, animals, etc. While Male and Female may be
+            used, text strings are also acceptable for people who do not
+            identify as a binary gender'
+        cred:
+          type: string
+        tags:
+          $ref: '#/components/schemas/Tags'
+    Price:
+      description: Describes the price of an item. Allows for domain extension.
+      type: object
+      properties:
+        currency:
+          type: string
+        value:
+          $ref: '#/components/schemas/DecimalValue'
+        estimated_value:
+          $ref: '#/components/schemas/DecimalValue'
+        computed_value:
+          $ref: '#/components/schemas/DecimalValue'
+        listed_value:
+          $ref: '#/components/schemas/DecimalValue'
+        offered_value:
+          $ref: '#/components/schemas/DecimalValue'
+        minimum_value:
+          $ref: '#/components/schemas/DecimalValue'
+        maximum_value:
+          $ref: '#/components/schemas/DecimalValue'
+    Provider:
+      description:
+        'Describes a service provider. This can be a restaurant, a hospital, a
+        Store etc'
+      type: object
+      properties:
+        id:
+          type: string
+          description: 'Id of the provider'
+        descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        category_id:
+          type: string
+          description: 'Category Id of the provider'
+        rating:
+          $ref: '#/components/schemas/Rating/properties/value'
+        time:
+          $ref: '#/components/schemas/Time'
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+        fulfillments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Fulfillment'
+        payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Payment'
+        locations:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/Location'
+              - type: object
+                properties:
+                  rateable:
+                    $ref: '#/components/schemas/Rateable'
+        offers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Offer'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Item'
+        exp:
+          type: string
+          description: Time after which catalog has to be refreshed
+          format: date-time
+        rateable:
+          $ref: '#/components/schemas/Rateable'
+        tags:
+          $ref: '#/components/schemas/Tags'
+    Rateable:
+      description: If the entity can be rated or not
+      type: boolean
+    Rating:
+      description: Describes the rating of a person or an object.
+      type: object
+      properties:
+        rating_category:
+          description: Category of the object being rated
+          type: string
+        id:
+          description: Id of the object being rated
+          type: string
+        value:
+          description: Rating value given to the object
+          type: number
+          minimum: 0
+        feedback_form:
+          $ref: '#/components/schemas/FeedbackForm'
+        feedback_id:
+          $ref: '#/components/schemas/FeedbackUrl/properties/params/properties/feedback_id'
+    Scalar:
+      description: An object representing a scalar quantity.
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - CONSTANT
+            - VARIABLE
+        value:
+          type: number
+        estimated_value:
+          type: number
+        computed_value:
+          type: number
+        range:
+          type: object
+          properties:
+            min:
+              type: number
+            max:
+              type: number
+        unit:
+          type: string
       required:
-        - 'domain'
-        - 'action'
-        - 'core_version'
-        - 'transaction_id'
-        - 'message_id'
-        - 'timestamp'
-    Catalog:
-      description: 'Provides detailed information about the items a Beckn Provider can provide.'
+        - value
+        - unit
+    Schedule:
+      description: Describes a schedule
       type: object
       properties:
-        # TODO
-        todo:
-          type: boolean
-    Intent:
-      description: 'Search parameters, which if can be fulfilled, Beckn Providers respond to Beckn Applications'
+        frequency:
+          $ref: '#/components/schemas/Duration'
+        holidays:
+          type: array
+          items:
+            type: string
+            format: date-time
+        times:
+          type: array
+          items:
+            type: string
+            format: date-time
+    State:
+      description: Describes a state
       type: object
       properties:
-        # TODO
-        todo:
-          type: boolean
+        descriptor:
+          $ref: '#/components/schemas/Descriptor'
+        updated_at:
+          type: string
+          format: date-time
+        updated_by:
+          type: string
+          description: ID of entity which changed the state
+    Tags:
+      description:
+        Describes a tag. This is a simple key-value store which is used to
+        contain extended metadata
+      additionalProperties:
+        type: string
+    Time:
+      description:
+        Describes time in its various forms. It can be a single point in time;
+        duration; or a structured timetable of operations
+      type: object
+      properties:
+        label:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        duration:
+          $ref: '#/components/schemas/Duration'
+        range:
+          type: object
+          properties:
+            start:
+              type: string
+              format: date-time
+            end:
+              type: string
+              format: date-time
+        days:
+          type: string
+          description: comma separated values representing days of the week
+        schedule:
+          $ref: '#/components/schemas/Schedule'
     SearchMessage:
-      description: 'The search intent that Beckn Providers which can fulfill must respond to.'
+      description:
+        'The search intent that Beckn Providers which can fulfill must respond
+        to.'
       type: 'object'
       properties:
         intent:
           $ref: '#/components/schemas/Intent'
+    Vehicle:
+      description:
+        Describes the properties of a vehicle used in a mobility service
+      type: object
+      properties:
+        category:
+          type: string
+        capacity:
+          type: integer
+        make:
+          type: string
+        model:
+          type: string
+        size:
+          type: string
+        variant:
+          type: string
+        color:
+          type: string
+        energy_type:
+          type: string
+        registration:
+          type: string
